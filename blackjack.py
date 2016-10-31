@@ -63,7 +63,12 @@ def firstSample():
             return 0, False
         else:
             return 1, False
-    while playerSum < 12: playerSum += card()
+    while playerSum < 12:
+        c = card()
+        playerSum += c
+        if (c == 1) and (playerSum <= 11):
+            playerSum += 10
+            usableAce = True
     if playerSum==21: return dealerPlaySample()
     return 0, encode()
 
