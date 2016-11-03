@@ -1,7 +1,7 @@
 import blackjack
 from pylab import *
 import random
-numEpisodes = 1000
+numEpisodes = 1
 
 returnSum = 0.0
 # initial state at the start of a new blackjack game
