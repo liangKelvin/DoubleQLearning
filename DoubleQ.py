@@ -5,8 +5,8 @@ import random
  
 numEpisodes = 1000000
 
-alpha = 0.005
-epsilon = 0.002
+alpha = 0.052
+epsilon = 0.022
 gamma = 1
 
 q1 = 0.00001*rand(182,2)
@@ -74,19 +74,20 @@ def learn(alpha, eps, numTrainingEpsiodes):
 			stateAction = blackjack.sample(s,a)
 			newState = stateAction[1]
 			reward = stateAction[0]
-
+			# allow for terminal state annoucement
 			if newState == False :
 				newState = 181
 
 			#probabilty of 0.5 for update
 			p = random.randint(0,1)
-			
+			# update q1
 			if p == 0 :
 				q1[s,a] = q1[s,a] + alpha * (reward + (gamma * q2[newState, argmax(q1[newState, :])]) - q1[s,a])
-
+			# update q2
 			elif p == 1 :
 				q2[s,a] = q2[s,a] + alpha * (reward + (gamma * q1[newState, argmax(q2[newState, :])]) - q2[s,a])
 
+			# reset the state assignment
 			if newState == 181 :
 				newState = False 
 			
