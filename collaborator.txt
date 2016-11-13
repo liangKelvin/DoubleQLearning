@@ -1,7 +1,6 @@
 Name:Kelvin Liang
 CCID: liangmah
 ID: 1395077
-
-Name2: Shivansh Singla
-CCID: 
-ID: 
+Name: Shivansh Singla
+CCID: singla1
+ID: 1405895

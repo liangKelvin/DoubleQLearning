@@ -5,25 +5,26 @@ import random
  
 numEpisodes = 1000000
 
-alpha = 0.052
-epsilon = 0.022
+alpha = 0.001 # Best Value 0.052
+epsilon = 0.01 # Best Value 0.022
 gamma = 1
 
-q1 = 0.00001*rand(182,2)
-q2 = 0.00001*rand(182,2)
-q1[181, :] = 0
-q2[181, :] = 0
-qtotal = q1 + q2
+Q1 = 0.00001*rand(182,2)
+Q2 = 0.00001*rand(182,2)
+Q1[181, :] = 0
+Q2[181, :] = 0
+qtotal = Q1 + Q2
 
+# Greedy policy in sum of two action values
 def policy(s) :
-	qTotal = q1 + q2
+	qTotal = Q1 + Q2
 	return argmax(qTotal[s, :])
 
-def learn(alpha, eps, numTrainingEpsiodes):
+def learn(alpha, eps, numTrainingEpisodes):
 	returnSum = 0.0
-	for episodeNum in range(numTrainingEpsiodes):
-		s = blackjack.init() # initial state
+	for episodeNum in range(numTrainingEpisodes):
 		G = 0
+		s = blackjack.init() # initial state
 		# pick a random number between 0 and 1
 		# this represents the random greedy probability
 		i = random.uniform(0,1) 
@@ -33,9 +34,11 @@ def learn(alpha, eps, numTrainingEpsiodes):
 			a = random.randint(0,1)
 
 		else :
-			qTotal = q1 + q2
+			# Greedy policy in sum of two action values
+			qTotal = Q1 + Q2
 			a = argmax(qTotal[s, :])
 
+		# Next state and reward from current state and action	
 		stateAction = blackjack.sample(s,a)
 		newState = stateAction[1]
 		reward = stateAction[0]
@@ -43,15 +46,15 @@ def learn(alpha, eps, numTrainingEpsiodes):
 		if newState == False :
 			newState = 181
 
-		#probabilty of 0.5 for update
+		#probability of 0.5 for update
 		p = random.randint(0,1)
-		
+		# update q1
 		if p == 0 :
-			q1[s,a] = q1[s,a] + alpha * (reward + (gamma * q2[newState, argmax(q1[newState, :])]) - q1[s,a])
-
+			Q1[s,a] = Q1[s,a] + alpha * (reward + (gamma * Q2[newState, argmax(Q1[newState, :])]) - Q1[s,a])
+		# update q2
 		elif p == 1 :
-			q2[s,a] = q2[s,a] + alpha * (reward + (gamma * q1[newState, argmax(q2[newState, :])]) - q2[s,a])
-
+			Q2[s,a] = Q2[s,a] + alpha * (reward + (gamma * Q1[newState, argmax(Q2[newState, :])]) - Q2[s,a])
+		# update newState to False - terminal state
 		if newState == 181 :
 			newState = False 
 		
@@ -68,13 +71,13 @@ def learn(alpha, eps, numTrainingEpsiodes):
 				a = random.randint(0,1)
 				
 			else :
-				qTotal = q1 + q2
+				qTotal = Q1 + Q2
 				a = argmax(qTotal[s, :])
 
 			stateAction = blackjack.sample(s,a)
 			newState = stateAction[1]
 			reward = stateAction[0]
-			# allow for terminal state annoucement
+			# allow for terminal state announcement
 			if newState == False :
 				newState = 181
 
@@ -82,10 +85,10 @@ def learn(alpha, eps, numTrainingEpsiodes):
 			p = random.randint(0,1)
 			# update q1
 			if p == 0 :
-				q1[s,a] = q1[s,a] + alpha * (reward + (gamma * q2[newState, argmax(q1[newState, :])]) - q1[s,a])
+				Q1[s,a] = Q1[s,a] + alpha * (reward + (gamma * Q2[newState, argmax(Q1[newState, :])]) - Q1[s,a])
 			# update q2
 			elif p == 1 :
-				q2[s,a] = q2[s,a] + alpha * (reward + (gamma * q1[newState, argmax(q2[newState, :])]) - q2[s,a])
+				Q2[s,a] = Q2[s,a] + alpha * (reward + (gamma * Q1[newState, argmax(Q2[newState, :])]) - Q2[s,a])
 
 			# reset the state assignment
 			if newState == 181 :
@@ -94,11 +97,11 @@ def learn(alpha, eps, numTrainingEpsiodes):
 			s = newState
 			G = G + reward
 			
-		#if episodeNum % 10000 == 0 and episodeNum != 0:
-			#print("Average return so far: ", returnSum/episodeNum)
+		#print("Episode: ", episodeNum, "Return: ", G)
 		returnSum = returnSum + G
-	print("Average return: ", returnSum/numTrainingEpsiodes)
-	blackjack.printPolicy(policy)
+		#if episodeNum % 10000 == 0 and episodeNum != 0:
+			#print("Average return so far: ", returnSum / episodeNum)
+	#blackjack.printPolicyToFile(policy)
 
 
 def evaluate(numEvaluationEpisodes):
@@ -106,7 +109,9 @@ def evaluate(numEvaluationEpisodes):
 	for episodeNum in range(numEvaluationEpisodes):
 		G = 0
 		s = blackjack.init() # initial state
+		# Choose an action with greedy policy
 		a = policy(s)
+		# Next state and reward from current state and action
 		stateAction = blackjack.sample(s,a)
 		newState = stateAction[1]
 		reward = stateAction[0]
@@ -116,6 +121,7 @@ def evaluate(numEvaluationEpisodes):
 		while newState != False :
 
 			a = policy(newState)
+			# Next state and reward from current state and action
 			stateAction = blackjack.sample(newState, a)
 			reward = stateAction[0]
 			newState = stateAction[1]
@@ -126,7 +132,19 @@ def evaluate(numEvaluationEpisodes):
 		returnSum = returnSum + G
 	return returnSum / numEvaluationEpisodes
 
+
  
-learn(alpha, epsilon, numEpisodes)
-x = evaluate(numEpisodes)
-print("return: ", x)
+#learn(alpha, epsilon, numEpisodes)
+#x = evaluate(numEpisodes)
+""""
+Part 2 results
+Average return observed when 
+alpha = 0.001
+eps = 0.01
+numTrainingEpisodes = 1,000,000
+Learning:
+avgReturn = -0.067753
+Evaluation:
+Deterministic avgReturn = -0.0300204
+"""
+#print("return: ", x)

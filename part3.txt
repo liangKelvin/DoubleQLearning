@@ -1,5 +1,4 @@
-alpha= 0.052
-eps= 0.022
-numTrainingEpisodes= 10,000,000
-avgReturn=	-0.056678
-evaluation = -0.045412
+alpha=0.052
+eps=0.022
+numTrainingEpisodes=10,000,000
+avgReturn=-0.045412
